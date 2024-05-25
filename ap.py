@@ -1,56 +1,31 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 28 19:09:39 2024
-
-@author: nihal
-"""
-
 import streamlit as st
+import pandas as pd
 import joblib
+from sklearn.ensemble import GradientBoostingRegressor
 
+# Load the model
+model = joblib.load('our_joblib_model')
 
-def main():  
-    html_temp = """
-    <div style="background-color:Lightblue;padding:16px">
-    <h2 style="color:black"; text-align:center> HEALTH INSURANCE COST PREDICTION </h2>
-    </div>
+# Title
+st.title("Insurance Cost Prediction")
 
-    """
-    
-    st.markdown(html_temp,unsafe_allow_html=True)
-    
-    model = joblib.load('our_joblib_model')
-    
-    p1 = st.slider("Enter Your Age",18,100)
-    
-    s1=st.selectbox("Sex",("Male","Female"))
-    
-    if s1=="Male":
-        p2=1
-    else:
-        p2=0
+# Input fields
+age = st.number_input("Age", min_value=18, max_value=100, value=30)
+sex = st.selectbox("Sex", ["male", "female"])
+bmi = st.number_input("BMI", min_value=15.0, max_value=55.0, value=25.0)
+children = st.number_input("Number of Children", min_value=0, max_value=10, value=0)
+smoker = st.selectbox("Smoker", ["yes", "no"])
+region = st.selectbox("Region", ["southwest", "southeast", "northwest", "northeast"])
 
-    p3 =st.number_input("Enter Your BMI Value")
-    
-    p4 = st.slider("Enter Number of Children",0,4) 
-    
-    s2=st.selectbox("Smoker",("Yes","No"))
-    
-    if s2=="Yes":
-        p5=1
-    else:
-        p5=0
-        
-    p6 = st.slider("Enter Your Region [1-4]",1,4)
-    
-    if st.button('Predict'):
-        prediction = model.predict([[p1,p2,p3,p4,p5,p6]])
-        
-        st.success('Insurance Amount is {} '.format(round(prediction[0],2)))   
-    
- 
-   
-if __name__ == '__main__':
-    main()
-    
-    
+# Convert input to model format
+sex = 1 if sex == "male" else 0
+smoker = 1 if smoker == "yes" else 0
+region_map = {"southwest": 1, "southeast": 2, "northwest": 3, "northeast": 4}
+region = region_map[region]
+
+# Prediction
+if st.button("Predict"):
+    input_data = pd.DataFrame([[age, sex, bmi, children, smoker, region]],
+                              columns=['age', 'sex', 'bmi', 'children', 'smoker', 'region'])
+    prediction = model.predict(input_data)[0]
+    st.write(f"The predicted insurance cost is: ${prediction:.2f}")
