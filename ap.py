@@ -1,10 +1,13 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from sklearn.ensemble import GradientBoostingRegressor
 
 # Load the model
-model = joblib.load('our_joblib_model')
+try:
+    model = joblib.load('our_joblib_model')
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    st.stop()
 
 # Title
 st.title("Insurance Cost Prediction")
@@ -25,7 +28,10 @@ region = region_map[region]
 
 # Prediction
 if st.button("Predict"):
-    input_data = pd.DataFrame([[age, sex, bmi, children, smoker, region]],
-                              columns=['age', 'sex', 'bmi', 'children', 'smoker', 'region'])
-    prediction = model.predict(input_data)[0]
-    st.write(f"The predicted insurance cost is: ${prediction:.2f}")
+    try:
+        input_data = pd.DataFrame([[age, sex, bmi, children, smoker, region]],
+                                  columns=['age', 'sex', 'bmi', 'children', 'smoker', 'region'])
+        prediction = model.predict(input_data)[0]
+        st.write(f"The predicted insurance cost is: ${prediction:.2f}")
+    except Exception as e:
+        st.error(f"Error making prediction: {e}")
